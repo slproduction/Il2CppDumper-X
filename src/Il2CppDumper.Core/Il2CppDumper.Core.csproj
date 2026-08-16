@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Il2CppDumper</RootNamespace>
+    <AssemblyName>Il2CppDumper.Core</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Diagnostics/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/Attributes/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/ExecutableFormats/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/Extensions/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/Il2Cpp/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/IO/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/Outputs/**/*.cs" />
+    <Compile Include="../../Il2CppDumper/Utils/**/*.cs"
+             Exclude="../../Il2CppDumper/Utils/FileDialogNative.cs;../../Il2CppDumper/Utils/OpenFileDialog.cs" />
+    <Compile Include="../../Il2CppDumper/Config.cs" />
+    <Compile Include="../../Il2CppDumper/Properties/Resources.Designer.cs" />
+    <Compile Include="../../Il2CppDumper/Resource1.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../../Il2CppDumper/Properties/Resources.resx">
+      <LogicalName>Il2CppDumper.Properties.Resources.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="../../Il2CppDumper/Resource1.resx">
+      <LogicalName>Il2CppDumper.Resource1.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+  </ItemGroup>
+</Project>

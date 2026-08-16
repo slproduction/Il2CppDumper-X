@@ -1,0 +1,237 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix
+        required: true
+        type: string
+      prerelease:
+        description: Mark the GitHub release as a prerelease
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - id: version
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TAG_NAME: ${{ github.ref_name }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            version="$MANUAL_VERSION"
+            tag="v$MANUAL_VERSION"
+          else
+            tag="$TAG_NAME"
+            version="${TAG_NAME#v}"
+          fi
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - run: dotnet restore Il2CppDumper-X.slnx
+      - run: dotnet build Il2CppDumper-X.slnx --configuration Release --no-restore -p:Version=${{ steps.version.outputs.value }}
+      - run: dotnet test tests/Il2CppDumper.Tests/Il2CppDumper.Tests.csproj --configuration Release --no-build
+      - run: dotnet list Il2CppDumper-X.slnx package --vulnerable --include-transitive
+
+  publish:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            archive: zip
+          - os: windows-latest
+            rid: win-arm64
+            archive: zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            archive: tar
+          - os: ubuntu-latest
+            rid: linux-arm64
+            archive: tar
+          - os: macos-15
+            rid: osx-x64
+            archive: macos
+          - os: macos-15
+            rid: osx-arm64
+            archive: macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish desktop
+        shell: bash
+        run: >-
+          dotnet publish src/Il2CppDumper.Desktop/Il2CppDumper.Desktop.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          -p:Version=${{ needs.validate.outputs.version }}
+          --output publish/desktop
+      - name: Publish CLI
+        shell: bash
+        run: >-
+          dotnet publish src/Il2CppDumper.Cli/Il2CppDumper.Cli.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          -p:Version=${{ needs.validate.outputs.version }}
+          --output publish/cli
+      - name: Add release files
+        shell: bash
+        run: |
+          cp README.md LICENSE publish/desktop/
+          cp README.md LICENSE publish/cli/
+          printf 'Il2CppDumper %s\nRuntime: %s\nComponent: desktop\n' '${{ needs.validate.outputs.version }}' '${{ matrix.rid }}' > publish/desktop/BUILD-INFO.txt
+          printf 'Il2CppDumper %s\nRuntime: %s\nComponent: cli\n' '${{ needs.validate.outputs.version }}' '${{ matrix.rid }}' > publish/cli/BUILD-INFO.txt
+      - name: Create ZIP archives
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/desktop/* -DestinationPath Il2CppDumper-${{ matrix.rid }}.zip
+          Compress-Archive -Path publish/cli/* -DestinationPath Il2CppDumper-cli-${{ matrix.rid }}.zip
+      - name: Create tar.gz archives
+        if: matrix.archive == 'tar'
+        shell: bash
+        run: |
+          tar -czf Il2CppDumper-${{ matrix.rid }}.tar.gz -C publish/desktop .
+          tar -czf Il2CppDumper-cli-${{ matrix.rid }}.tar.gz -C publish/cli .
+      - name: Create macOS .app and DMG
+        if: startsWith(matrix.rid, 'osx-')
+        shell: bash
+        run: |
+          # Create .app bundle structure
+          APP_DIR="publish/desktop/Il2CppDumper.app"
+          CONTENTS_DIR="${APP_DIR}/Contents"
+          MACOS_DIR="${CONTENTS_DIR}/MacOS"
+          RESOURCES_DIR="${CONTENTS_DIR}/Resources"
+
+          # Move all files into MacOS folder
+          mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}"
+          if [ -d "${MACOS_DIR}/Il2CppDumper.app" ]; then
+            rm -rf "${MACOS_DIR}/Il2CppDumper.app"
+          fi
+          for f in publish/desktop/*; do
+            [ "$(basename "$f")" = "Il2CppDumper.app" ] && continue
+            mv "$f" "${MACOS_DIR}/" 2>/dev/null || true
+          done
+
+          cp src/Il2CppDumper.Desktop/Info.plist "${CONTENTS_DIR}/Info.plist"
+          plutil -replace CFBundleShortVersionString -string '${{ needs.validate.outputs.version }}' "${CONTENTS_DIR}/Info.plist"
+          plutil -replace CFBundleVersion -string '${{ needs.validate.outputs.version }}' "${CONTENTS_DIR}/Info.plist"
+          cp src/Il2CppDumper.Desktop/il2cppdumper.icns "${RESOURCES_DIR}/"
+          rm -f "${MACOS_DIR}/Info.plist" "${MACOS_DIR}/il2cppdumper.icns"
+
+          chmod +x "${MACOS_DIR}/Il2CppDumper"
+
+          # dotnet signs the executable before the app bundle exists. Re-sign the
+          # completed bundle so Info.plist and Resources are covered by the seal.
+          codesign --force --deep --sign - "${APP_DIR}"
+          codesign --verify --deep --strict --verbose=2 "${APP_DIR}"
+
+          # Create staging for DMG
+          STAGING_DIR="publish/dmg-staging"
+          mkdir -p "${STAGING_DIR}"
+          cp -R "${APP_DIR}" "${STAGING_DIR}/"
+
+          # Install create-dmg
+          brew install create-dmg
+
+          # Create DMG
+          create-dmg \
+            --volname "Il2CppDumper ${{ needs.validate.outputs.version }}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "Il2CppDumper.app" 150 190 \
+            --hide-extension "Il2CppDumper.app" \
+            --app-drop-link 450 190 \
+            --no-internet-enable \
+            "Il2CppDumper-${{ matrix.rid }}.dmg" \
+            "${STAGING_DIR}/"
+
+          # Keep the CLI available as a tar.gz on macOS; the desktop app is DMG-only.
+          tar -czf Il2CppDumper-cli-${{ matrix.rid }}.tar.gz -C publish/cli .
+      - name: Create checksum manifest
+        shell: bash
+        run: |
+          manifest="SHA256SUMS-${{ matrix.rid }}.txt"
+          for archive in Il2CppDumper-*.zip Il2CppDumper-*.tar.gz Il2CppDumper-*.dmg; do
+            [ -f "$archive" ] || continue
+            if command -v sha256sum >/dev/null 2>&1; then
+              checksum=$(sha256sum "$archive" | cut -d ' ' -f 1)
+            else
+              checksum=$(shasum -a 256 "$archive" | cut -d ' ' -f 1)
+            fi
+            printf '%s  %s\n' "$checksum" "$archive" >> "$manifest"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.rid }}
+          path: |
+            Il2CppDumper-*.zip
+            Il2CppDumper-*.tar.gz
+            Il2CppDumper-*.dmg
+            SHA256SUMS-*.txt
+          if-no-files-found: error
+
+  release:
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+      - name: Create release notes
+        run: |
+          {
+            printf 'Cross-platform Il2CppDumper-X desktop and CLI release.\n\n'
+            printf 'This is a community fork of [AndnixSH/Il2CppDumper-GUI](https://github.com/AndnixSH/Il2CppDumper-GUI).\n\n'
+            printf '## Downloads\n\n'
+            printf 'Choose the desktop archive for your platform. CLI archives are prefixed with `Il2CppDumper-cli-`. All builds are self-contained.\n\n'
+            printf '### macOS\n'
+            printf 'For macOS, use the `.dmg` file for a drag-and-drop desktop installation. The CLI is available as a `.tar.gz`.\n\n'
+            printf 'The macOS app has an integrity signature but is not Apple-notarized. On first launch, Control-click the app, choose **Open**, then confirm **Open**.\n\n'
+            printf '## SHA-256 checksums\n\n'
+            printf '| File | SHA-256 |\n| --- | --- |\n'
+            cat release-assets/SHA256SUMS-*.txt | sort -k2 | while read -r checksum file; do
+              printf '| `%s` | `%s` |\n' "$file" "$checksum"
+            done
+          } > release-notes.md
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+          PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
+        run: |
+          prerelease_flag=""
+          if [ "$PRERELEASE" = "true" ]; then prerelease_flag="--prerelease"; fi
+          gh release create "$TAG" release-assets/*.zip release-assets/*.tar.gz release-assets/*.dmg \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Il2CppDumper $TAG" \
+            --notes-file release-notes.md \
+            $prerelease_flag

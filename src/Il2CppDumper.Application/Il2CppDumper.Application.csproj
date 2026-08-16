@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Il2CppDumper.Application</RootNamespace>
+    <AssemblyName>Il2CppDumper.Application</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Il2CppDumper.Core/Il2CppDumper.Core.csproj" />
+    <ProjectReference Include="../Il2CppDumper.Packages/Il2CppDumper.Packages.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../Il2CppDumper/*.py">
+      <LogicalName>Il2CppDumper.Application.Scripts.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

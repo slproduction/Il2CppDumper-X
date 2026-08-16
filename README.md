@@ -1,139 +1,151 @@
-# Il2CppDumper GUI
+# Il2CppDumper-X
 
-![Screenshot](Screenshot.png)
+Cross-platform desktop application and CLI for extracting useful metadata from Unity IL2CPP builds.
 
-[![](https://img.shields.io/github/downloads/AndnixSH/Il2CppDumper-GUI/total?style=for-the-badge)](https://github.com/AndnixSH/Il2CppDumper-GUI/releases) [![](https://img.shields.io/github/v/release/andnixsh/Il2CppDumper-GUI?style=for-the-badge)](https://github.com/AndnixSH/APKToolGUI/releases)
+Il2CppDumper-X is a community fork of [Il2CppDumper-GUI](https://github.com/AndnixSH/Il2CppDumper-GUI), with a cross-platform Avalonia desktop interface, a headless CLI, package discovery, batch processing, and release builds for Windows, Linux, and macOS.
 
-This is the simple GUI version of Perfare's Il2CppDumper. The GUI is based on Bunifu Framework because I like dark theme. Support drag and drop binary files and global-metadata.dat for file selection. APK, APKS, XAPK, ZIP and decrypted IPA file for auto dump
+## Download
 
-# Note
+Choose **Desktop GUI** if you want the graphical application. Choose **CLI** for scripts, automation, or CI/CD. Every package is self-contained and includes the .NET runtime.
 
-Due to the variety and complexity of protection and encryption methods utilized by many games, I cannot offer support or assistance for protected games. Consequently, the Issues section is closed. Only Pull Requests are being accepted.
+| Operating system | Architecture | Desktop GUI | CLI |
+| --- | --- | --- | --- |
+| Windows | x64 | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-win-x64.zip) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-win-x64.zip) |
+| Windows | ARM64 | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-win-arm64.zip) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-win-arm64.zip) |
+| Linux | x64 | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-linux-x64.tar.gz) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-linux-x64.tar.gz) |
+| Linux | ARM64 | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-linux-arm64.tar.gz) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-linux-arm64.tar.gz) |
+| macOS | Apple Silicon (arm64) | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-osx-arm64.dmg) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-osx-arm64.tar.gz) |
+| macOS | Intel (x64) | [Download GUI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-osx-x64.dmg) | [Download CLI](https://github.com/slproduction/Il2CppDumper-X/releases/latest/download/Il2CppDumper-cli-osx-x64.tar.gz) |
 
-# Features
-- Complete DLL restore (except code), can be used to extract MonoBehaviour and MonoScript
-- Supports ELF, ELF64, Mach-O, PE, NSO and WASM format
-- Supports Unity 5.3 - 6000
-- Supports Metadata 16 - 39
-- Supports generate IDA, Ghidra and Binary Ninja scripts to help them better analyze il2cpp files
-- Supports generate structures header file
-- Supports Android memory dumped libil2cpp.so file to bypass protection
-- Support bypassing simple PE protection
-- Set output directory
-- Set registration offsets
-- Support drag and drop
-- Performance settings
-- Fast mode (skip the slow metadata-usage binary scan)
-- Support APK and IPA dump automations
+The GUI and CLI are published as separate packages. On macOS, the GUI is distributed exclusively as a DMG. SHA-256 checksums are listed in the [latest release description](https://github.com/slproduction/Il2CppDumper-X/releases/latest).
 
-# Requirements
-- Windows 7 and above
-- .NET 6.0 Desktop Runtime (Windows): https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+## Screenshot
 
-# Download links
+![Il2CppDumper-X desktop interface](./Screenshot.png)
 
-Note: Antivirus may flag this tool as malcious, it is false positive and you should not worry about it. They flag all modding tools you need as malicious, this is their business, this is their way to make money.
+## Features
 
-Il2CppDumper GUI: https://github.com/AndnixSH/Il2CppDumper-GUI/releases
+- Cross-platform desktop application for Windows, Linux, and macOS
+- Windows x64 and ARM64 support
+- Linux x64 and ARM64 support
+- macOS Intel and Apple Silicon support
+- Manual binary and metadata workflow
+- APK, APKS, APKM, XAPK, ZIP, and decrypted IPA package discovery
+- Batch processing for multiple packages
+- Headless CLI with `dump` and `batch` commands
+- Dummy DLL generation for tools such as dnSpy, ILSpy, UABE, and UtinyRipper
+- `il2cpp.h` structure header generation
+- IDA, Ghidra, Binary Ninja, and Hopper analysis scripts
+- Unity metadata versions 16-39, including Unity 6 / metadata v39 support
+- ELF, ELF64, Mach-O, PE, NSO, and WebAssembly formats
+- Android memory-dump workflows using dumped `libil2cpp.so`
 
-# How to use
+## Usage
 
-Drop APK, APKS, XAPK, ZIP or decrypted IPA file on the Start button to dump
+### Desktop
 
-To manually select files, drop binary file and global-metadata.dat on the textboxes or the Select button, or click Select and choose a file. After that, press the start button to dump
+1. Download the GUI package for your operating system and architecture.
+2. On Windows or Linux, extract the archive. On macOS, open the DMG and drag `Il2CppDumper` to Applications.
+3. Start `Il2CppDumper`. On the first macOS launch, Control-click the app, choose **Open**, then confirm **Open**.
+4. Select a package, or provide the executable and `global-metadata.dat` manually.
 
-To obtain CodeRegistration and MetadataRegistration, read the following tutorials:
-- https://tomorrowisnew.com/posts/Finding-CodeRegistration-and-MetadataRegistration/
-- https://il2cppdumper.com/reverse/examining-the-binary
+### CLI
 
-# Outputs
+Dump a binary and metadata pair:
 
-#### DummyDll
+```bash
+il2cppdumper dump GameAssembly.dll global-metadata.dat -o ./output
+```
 
-Folder, containing all restored dll files
+Dump an Android package:
 
-Use [dnSpy](https://github.com/0xd4d/dnSpy), [ILSpy](https://github.com/icsharpcode/ILSpy) or other .Net decompiler tools to view
+```bash
+il2cppdumper dump game.apk -o ./output --arch arm64-v8a
+```
 
-Can be used to extract Unity `MonoBehaviour` and `MonoScript`, for [UtinyRipper](https://github.com/mafaca/UtinyRipper), [UABE](https://7daystodie.com/forums/showthread.php?22675-Unity-Assets-Bundle-Extractor)
+Process packages recursively:
 
-#### ida.py
+```bash
+il2cppdumper batch ./packages -o ./results --recursive
+```
 
-For IDA (Python 2 / IDAPython 2, older IDA versions)
+Run `il2cppdumper help` to see all available options.
 
-#### ida_py3.py
+## Build From Source
 
-For IDA (Python 3 / IDAPython 3, IDA 7.4 and newer). Same as `ida.py` but updated for Python 3 syntax
+Requirements:
 
-#### ida_with_struct.py
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
-For IDA, read il2cpp.h file and apply structure information in IDA (Python 2 version)
+Build the solution:
 
-#### ida_with_struct_py3.py
+```bash
+dotnet build Il2CppDumper-X.slnx --configuration Release
+```
 
-For IDA, read il2cpp.h file and apply structure information in IDA (Python 3 version, IDA 7.4 and newer)
+Run the test suite:
 
-#### il2cpp.h
+```bash
+dotnet test tests/Il2CppDumper.Tests/Il2CppDumper.Tests.csproj --configuration Release
+```
 
-Structure information header file
+Run the desktop application:
 
-#### ghidra.py
+```bash
+dotnet run --project src/Il2CppDumper.Desktop/Il2CppDumper.Desktop.csproj
+```
 
-For Ghidra
+Run the CLI project:
 
-#### ghidra_with_struct.py
+```bash
+dotnet run --project src/Il2CppDumper.Cli/Il2CppDumper.Cli.csproj -- help
+```
 
-For Ghidra, read il2cpp.h file and apply structure/function signature information in Ghidra
+## Project Structure
 
-#### ghidra_wasm.py
+| Project | Purpose |
+| --- | --- |
+| `Il2CppDumper.Desktop` | Avalonia desktop application |
+| `Il2CppDumper.Cli` | Headless CLI for automation |
+| `Il2CppDumper.Application` | Shared dump pipeline, progress, cancellation, and result models |
+| `Il2CppDumper.Packages` | Package discovery and extraction for APK, APKS, APKM, XAPK, ZIP, and IPA |
+| `Il2CppDumper.Core` | Platform-independent metadata and executable processing |
 
-For Ghidra, work with [ghidra-wasm-plugin](https://github.com/nneonneo/ghidra-wasm-plugin)
+## Troubleshooting
 
-#### il2cpp_header_to_ghidra.py
+### Metadata file is not valid
 
-For Ghidra, run inside Ghidra's Script Manager to parse `il2cpp.h` and import all il2cpp structures into Ghidra's Data Type Manager
+Make sure the selected file is the original `global-metadata.dat`. Some games obfuscate or encrypt this file, which is outside the scope of this project.
 
-#### Il2CppBinaryNinja
+### Automatic mode cannot find registration addresses
 
-For Binary Ninja
+Try manual mode with the correct `CodeRegistration` and `MetadataRegistration` addresses. For protected Android builds, dump `libil2cpp.so` from memory first and use the dumped binary.
 
-#### il2cpp_header_to_binja.py
+### Antivirus warning
 
-For Binary Ninja, converts `il2cpp.h` into a Binary Ninja-compatible header so its structures can be imported
+Reverse-engineering and modding tools are frequently flagged by antivirus vendors. Verify the downloaded archive using the SHA-256 checksum published in the release description before running it.
 
-#### hopper-py3.py
+### macOS reports that the app cannot be opened
 
-For [Hopper Disassembler](https://www.hopperapp.com/) (Python 3). Reads `script.json` and renames the addresses/methods in Hopper
+The macOS build has an integrity signature but is not Apple-notarized. After copying it from the DMG to Applications, Control-click `Il2CppDumper`, choose **Open**, and confirm **Open**. This approval is required only on the first launch.
 
-#### script.json
+## Fork And Credits
 
-For ida.py, ghidra.py and Il2CppBinaryNinja
+This repository is a fork of [AndnixSH/Il2CppDumper-GUI](https://github.com/AndnixSH/Il2CppDumper-GUI). The fork preserves the project lineage while adding and maintaining the cross-platform Il2CppDumper-X application and CLI.
 
-#### stringliteral.json
+Original and contributing projects:
 
-Contains all stringLiteral information
+- [Perfare/Il2CppDumper](https://github.com/Perfare/Il2CppDumper)
+- [Il2CppInspector](https://github.com/djkaty/Il2CppInspector)
+- [Il2CppDumper-GUI](https://github.com/AndnixSH/Il2CppDumper-GUI)
 
-# Common errors
+Contributors:
 
-#### `ERROR: Metadata file supplied is not valid metadata file.`  
+- **Axey** - Unity 6 / metadata v39 upgrade and performance options
+- **AndnixSH** - GUI work and project foundation
+- **djkaty** - Il2CppInspector code and guidance
+- **T5ive** - Il2CppDumper-GUI code
 
-Make sure you choose the correct file. Sometimes games may obfuscate this file for content protection purposes and so on. Deobfuscating of such files is beyond the scope of this program, so please **DO NOT** file an issue regarding to deobfuscating.
+## License
 
-#### `ERROR: Can't use auto mode to process file, try manual mode.`
-
-Please note that the executable file for the PC platform is `GameAssembly.dll` or `*Assembly.dll`
-
-#### `ERROR: This file may be protected.`
-
-Il2CppDumper detected that the executable file has been protected, use `GameGuardian` to dump `libil2cpp.so` from the game memory, then use Il2CppDumper to load and follow the prompts, can bypass most protections.
-
-# Credits
-
-- Axey (Unity 6 / Metadata v39 upgrade, performance options)
-
-- AndnixSH (GUI related)
-
-- Perfare [Il2CppDumper](https://github.com/Perfare/Il2CppDumper)
-
-- djkaty (Helped me fixing an issue and I used some codes from her's [Il2CppInspector](https://github.com/djkaty/Il2CppInspector/)
-
-- T5ive (Using some of his codes) [Il2CppDumper-GUI](https://github.com/T5ive/Il2CppDumper-GUI)
+MIT License. See [LICENSE](./LICENSE) for details.

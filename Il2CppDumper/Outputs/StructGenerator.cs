@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Il2CppDumper.Il2CppConstants;
@@ -27,7 +28,7 @@ namespace Il2CppDumper
         private readonly List<ulong> genericClassList = new();
         private readonly StringBuilder arrayClassHeader = new();
         private readonly StringBuilder methodInfoHeader = new();
-        private static readonly HashSet<ulong> methodInfoCache = new();
+        private readonly HashSet<ulong> methodInfoCache = new();
         private static readonly HashSet<string> keyword = new(StringComparer.Ordinal)
         { "klass", "monitor", "register", "_cs", "auto", "friend", "template", "flat", "default", "_ds", "interrupt",
             "unsigned", "signed", "asm", "if", "case", "break", "continue", "do", "new", "_", "short", "union", "class", "namespace"};
@@ -41,19 +42,19 @@ namespace Il2CppDumper
             il2Cpp = il2CppExecutor.il2Cpp;
         }
 
-        private static void WriteJsonToFile<T>(string path, T value)
+        private static void WriteJsonToFile<T>(string path, T value, JsonTypeInfo<T> typeInfo)
         {
             // UTF-8 without BOM, indented, streamed to disk to avoid allocating a
             // single huge string for very large outputs.
             using var fs = File.Create(path);
             using var writer = new Utf8JsonWriter(fs, new JsonWriterOptions { Indented = true });
-            JsonSerializer.Serialize(writer, value, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
+            JsonSerializer.Serialize(writer, value, typeInfo);
         }
 
         public void WriteScript(string outputDir, bool skipMetadataUsage = false, int workerThreads = 0)
         {
             var json = new ScriptJson();
-            MainForm.Log($"  [struct] building name table for {metadata.typeDefs.Length} types...");
+            DumperDiagnostics.Information($"[struct] Building name table for {metadata.typeDefs.Length} types...");
             // 生成唯一名称
             for (var imageIndex = 0; imageIndex < metadata.imageDefs.Length; imageIndex++)
             {
@@ -67,7 +68,7 @@ namespace Il2CppDumper
                     CreateStructNameDic(typeDef);
                 }
             }
-            MainForm.Log("  [struct] resolving generic instances...");
+            DumperDiagnostics.Information("[struct] Resolving generic instances...");
             // 生成后面处理泛型实例要用到的字典
             foreach (var il2CppType in il2Cpp.types.Where(x => x.type == Il2CppTypeEnum.IL2CPP_TYPE_GENERICINST))
             {
@@ -84,7 +85,7 @@ namespace Il2CppDumper
                 nameGenericClassDic[typeStructName] = il2CppType;
                 genericClassStructNameDic[il2CppType.data.generic_class] = typeStructName;
             }
-            MainForm.Log("  [struct] processing methods and building signatures...");
+            DumperDiagnostics.Information("[struct] Processing methods and building signatures...");
             // 处理函数
             foreach (var imageDef in metadata.imageDefs)
             {
@@ -279,12 +280,12 @@ namespace Il2CppDumper
             // 处理MetadataUsage
             if (il2Cpp.Version >= 27 && skipMetadataUsage)
             {
-                MainForm.Log("  [struct] skipping metadata-usage scan (fast mode)");
+                DumperDiagnostics.Information("[struct] Skipping metadata-usage scan (fast mode)");
             }
             else if (il2Cpp.Version >= 27)
             {
                 var threads = workerThreads <= 0 ? Environment.ProcessorCount : workerThreads;
-                MainForm.Log($"  [struct] scanning binary data sections for metadata usages ({threads} thread(s))...");
+                DumperDiagnostics.Information($"[struct] Scanning binary data sections for metadata usages ({threads} thread(s))...");
                 var sectionHelper = executor.GetSectionHelper();
                 var pointerSize = (int)il2Cpp.PointerSize;
                 var is32 = il2Cpp.Is32Bit;
@@ -399,19 +400,18 @@ namespace Il2CppDumper
                 }
             }
             //输出单独的StringLiteral
-            var stringLiterals = json.ScriptString.Select(x => new
+            var stringLiterals = json.ScriptString.Select(x => new ScriptStringLiteral
             {
                 value = x.Value,
                 address = $"0x{x.Address:X}"
             }).ToArray();
-            var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, IncludeFields = true };
-            MainForm.Log("  [struct] writing script.json / stringliteral.json / il2cpp.h...");
+            DumperDiagnostics.Information("[struct] Writing script.json / stringliteral.json / il2cpp.h...");
             // Stream JSON directly to disk rather than building one giant in-memory
             // string. On large or protected binaries these collections can exceed the
             // ~2 GB single-string/array limit and throw OutOfMemoryException.
-            WriteJsonToFile(outputDir + "stringliteral.json", stringLiterals);
+            WriteJsonToFile(Path.Combine(outputDir, "stringliteral.json"), stringLiterals, ScriptJsonSerializerContext.Default.ScriptStringLiteralArray);
             //写入文件
-            WriteJsonToFile(outputDir + "script.json", json);
+            WriteJsonToFile(Path.Combine(outputDir, "script.json"), json, ScriptJsonSerializerContext.Default.ScriptJson);
             //il2cpp.h
             for (int i = 0; i < genericClassList.Count; i++)
             {
@@ -464,13 +464,13 @@ namespace Il2CppDumper
                     sb.Append(HeaderConstants.HeaderV29);
                     break;
                 default:
-                    MainForm.Log($"WARNING: il2cpp version [{il2Cpp.Version}] has no .h template; skipping il2cpp.h (script.json was still written)");
+                    DumperDiagnostics.Warning($"Il2Cpp version [{il2Cpp.Version}] has no .h template; skipping il2cpp.h (script.json was still written)");
                     return;
             }
             sb.Append(headerStruct);
             sb.Append(arrayClassHeader);
             sb.Append(methodInfoHeader);
-            File.WriteAllText(outputDir + "il2cpp.h", sb.ToString());
+            File.WriteAllText(Path.Combine(outputDir, "il2cpp.h"), sb.ToString());
         }
 
         private void AddMetadataUsageTypeInfo(ScriptJson json, uint index, ulong address)

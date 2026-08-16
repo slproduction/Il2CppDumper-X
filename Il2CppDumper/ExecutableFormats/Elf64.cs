@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Media;
 using static Il2CppDumper.ElfConstants;
 
 namespace Il2CppDumper
@@ -41,7 +40,7 @@ namespace Il2CppDumper
                 RelocationProcessing();
                 if (CheckProtection())
                 {
-                    MainForm.Log("ERROR: This file may be protected.", Brushes.Orange);
+                    DumperDiagnostics.Error("This file may be protected.");
                 }
             }
         }
@@ -118,13 +117,13 @@ namespace Il2CppDumper
             }
             if (codeRegistration > 0 && metadataRegistration > 0)
             {
-                MainForm.Log("Detected Symbol !");
-                MainForm.Log("CodeRegistration : {0:x}", codeRegistration);
-                MainForm.Log("MetadataRegistration : {0:x}", metadataRegistration);
+                DumperDiagnostics.Information("Detected Symbol!");
+                DumperDiagnostics.Information("CodeRegistration : {0:x}", codeRegistration);
+                DumperDiagnostics.Information("MetadataRegistration : {0:x}", metadataRegistration);
                 Init(codeRegistration, metadataRegistration);
                 return true;
             }
-            MainForm.Log("ERROR: No symbol is detected", Brushes.Orange);
+            DumperDiagnostics.Error("No symbol is detected");
             return false;
         }
 
@@ -183,7 +182,7 @@ namespace Il2CppDumper
 
         private void RelocationProcessing()
         {
-            MainForm.Log("Applying relocations...");
+            DumperDiagnostics.Information("Applying relocations...");
             try
             {
                 var relaOffset = MapVATR(dynamicSection.First(x => x.d_tag == DT_RELA).d_un);
@@ -223,7 +222,7 @@ namespace Il2CppDumper
                 //.init_proc
                 if (dynamicSection.Any(x => x.d_tag == DT_INIT))
                 {
-                    MainForm.Log("WARNING: find .init_proc", Brushes.Yellow);
+                    DumperDiagnostics.Warning("Found .init_proc");
                     return true;
                 }
                 //JNI_OnLoad
@@ -234,13 +233,13 @@ namespace Il2CppDumper
                     switch (name)
                     {
                         case "JNI_OnLoad":
-                            MainForm.Log("WARNING: find JNI_OnLoad", Brushes.Yellow);
+                            DumperDiagnostics.Warning("Found JNI_OnLoad");
                             return true;
                     }
                 }
                 if (sectionTable != null && sectionTable.Any(x => x.sh_type == SHT_LOUSER))
                 {
-                    MainForm.Log("WARNING: find SHT_LOUSER section", Brushes.Yellow);
+                    DumperDiagnostics.Warning("Found SHT_LOUSER section");
                     return true;
                 }
             }

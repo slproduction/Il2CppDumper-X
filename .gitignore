@@ -233,6 +233,7 @@ _pkginfo.txt
 !?*.[Cc]ache/
 
 # Others
+.DS_Store
 ClientBin/
 ~$*
 *~
@@ -387,3 +388,10 @@ FodyWeavers.xsd
 .idea/
 *.sln.iml
 UpgradeReport.sarif
+
+# Project-specific
+bs/
+docs/
+*.ipa
+*.backup
+.opencode/

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Il2CppDumper.Packages</RootNamespace>
+    <AssemblyName>Il2CppDumper.Packages</AssemblyName>
+  </PropertyGroup>
+</Project>

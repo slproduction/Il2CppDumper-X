@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Il2CppDumper
 {
@@ -37,5 +39,21 @@ namespace Il2CppDumper
         public ulong Address;
         public string Name;
         public ulong MethodAddress;
+    }
+
+    public class ScriptStringLiteral
+    {
+        public string value;
+        public string address;
+    }
+
+    [JsonSourceGenerationOptions(
+        WriteIndented = true,
+        IncludeFields = true,
+        GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(ScriptJson))]
+    [JsonSerializable(typeof(ScriptStringLiteral[]))]
+    internal partial class ScriptJsonSerializerContext : JsonSerializerContext
+    {
     }
 }

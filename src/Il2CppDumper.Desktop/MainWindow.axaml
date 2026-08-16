@@ -1,0 +1,568 @@
+<?xml version="1.0"?>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Il2CppDumper.Desktop.ViewModels" x:Class="Il2CppDumper.Desktop.MainWindow" x:DataType="vm:MainWindowViewModel" Title="Il2CppDumper X" Width="1480" Height="900" MinWidth="1120" MinHeight="700" WindowStartupLocation="CenterScreen" CanResize="True" DragDrop.AllowDrop="True">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" MinHeight="320"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="0" MinHeight="0" MaxHeight="420"/>
+      <RowDefinition Height="32"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="220" MinWidth="210" MaxWidth="300"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="*" MinWidth="820"/>
+    </Grid.ColumnDefinitions>
+    <Border Grid.RowSpan="4" MinWidth="210" MaxWidth="300" Background="#0D1317" BorderBrush="#26343B" BorderThickness="0,0,1,0" Padding="16,18">
+    <Grid RowDefinitions="Auto,34,Auto,*,Auto">
+        <Grid ColumnDefinitions="38,*" ColumnSpacing="10">
+          <Border Width="38" Height="38" CornerRadius="7" Background="#4F8DFF" ClipToBounds="True">
+            <Image Source="avares://Il2CppDumper/Assets/icon-512.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+            <TextBlock Text="Il2CppDumper X" FontWeight="Bold" FontSize="15" Foreground="#F2F5F6"/>
+            <TextBlock Text="IL2CPP analysis workspace" Classes="muted" FontSize="11"/>
+          </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="2" Spacing="3">
+          <TextBlock Text="WORKSPACE" Classes="eyebrow" Margin="10,0,0,7"/>
+           <Button Classes="nav" Classes.selected="{Binding IsDumpPage}" Command="{Binding ShowDumpCommand}" ToolTip.Tip="Choose input and run one dump">
+             <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
+               <Border Background="{StaticResource AccentBrush}" CornerRadius="2" Width="3" Height="20" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center" IsVisible="{Binding IsDumpPage}"/>
+                <TextBlock Grid.Column="1" Text="New dump" VerticalAlignment="Center"/>
+            </Grid>
+          </Button>
+           <Button Classes="nav" Classes.selected="{Binding IsBatchPage}" Command="{Binding ShowBatchCommand}" ToolTip.Tip="Queue multiple packages">
+             <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
+                <Border Background="{StaticResource AccentBrush}" CornerRadius="2" Width="3" Height="20" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center" IsVisible="{Binding IsBatchPage}"/>
+                <TextBlock Grid.Column="1" Text="Batch queue" VerticalAlignment="Center"/>
+            </Grid>
+          </Button>
+           <Button Classes="nav" Classes.selected="{Binding IsHistoryPage}" Command="{Binding ShowHistoryCommand}" ToolTip.Tip="Review completed runs">
+             <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
+                <Border Background="{StaticResource AccentBrush}" CornerRadius="2" Width="3" Height="20" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center" IsVisible="{Binding IsHistoryPage}"/>
+                <TextBlock Grid.Column="1" Text="Job history" VerticalAlignment="Center"/>
+            </Grid>
+          </Button>
+           <Button Classes="nav" Classes.selected="{Binding IsSettingsPage}" Command="{Binding ShowSettingsCommand}" ToolTip.Tip="Set run defaults">
+             <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
+                <Border Background="{StaticResource AccentBrush}" CornerRadius="2" Width="3" Height="20" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center" IsVisible="{Binding IsSettingsPage}"/>
+                <TextBlock Grid.Column="1" Text="Settings" VerticalAlignment="Center"/>
+            </Grid>
+          </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Spacing="10">
+          <Button Classes="nav" Command="{Binding ShowLogsCommand}" ToolTip.Tip="View dump progress and diagnostics">
+             <Grid ColumnDefinitions="14,*,Auto" VerticalAlignment="Center">
+                <Border Background="{StaticResource WarningBrush}" CornerRadius="2" Width="3" Height="20" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center" IsVisible="{Binding HasActivity}"/>
+                <TextBlock Grid.Column="1" Text="{Binding LogsButtonText}" VerticalAlignment="Center"/>
+              <Border Grid.Column="2" Classes="badge" IsVisible="{Binding HasActivity}">
+                <TextBlock Text="{Binding ActivityBadge}" FontSize="9" Foreground="#C2CDD1"/>
+              </Border>
+            </Grid>
+          </Button>
+          <Expander IsExpanded="False" Background="#11181D" BorderBrush="#26343B" BorderThickness="1" CornerRadius="6" Opacity="0.86">
+            <Expander.Header>
+              <Grid ColumnDefinitions="*,Auto" Margin="8,4">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="Updates" FontSize="12" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding UpdateStatus}" Classes="muted" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+                <Border Grid.Column="1" Width="6" Height="6" CornerRadius="3" Background="#D5A85B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+              </Grid>
+            </Expander.Header>
+              <StackPanel Spacing="8" Margin="12,4,12,12">
+                 <StackPanel Spacing="5">
+                   <TextBlock Text="UPDATE CHANNEL" Classes="label" Margin="0"/>
+                   <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding UpdateChannelOptions}" SelectedItem="{Binding UpdateChannel}" MinHeight="34"/>
+                 </StackPanel>
+                 <Button Content="Check for updates" Classes="quiet" Command="{Binding CheckForUpdatesCommand}" IsVisible="{Binding !IsUpdateAvailable}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <ProgressBar Height="3" IsIndeterminate="True" IsVisible="{Binding IsCheckingForUpdates}"/>
+                <Button Content="Install update" Classes="primary compact" Command="{Binding InstallUpdateCommand}" IsVisible="{Binding IsUpdateAvailable}"/>
+              </StackPanel>
+          </Expander>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <GridSplitter Grid.Column="1" Grid.RowSpan="4" Width="5" ResizeDirection="Columns" Background="#26343B"/>
+    <Grid Grid.Column="2" Margin="28,22,26,16">
+      <ScrollViewer IsVisible="{Binding IsDumpPage}" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14" MaxWidth="1000">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="4">
+              <TextBlock Text="NEW DUMP" Classes="eyebrow"/>
+              <TextBlock Text="Run one analysis" Classes="section-title"/>
+              <TextBlock Text="Choose the input, confirm the target, and start the dump." Classes="muted" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+              <TextBlock Text="INPUT MODE" Classes="eyebrow" HorizontalAlignment="Center"/>
+              <Border Classes="metric" Padding="4">
+                <Grid ColumnDefinitions="Auto,Auto">
+                  <Button Content="Package" Classes="mode" Classes.selected="{Binding IsPackageMode}" Command="{Binding SelectPackageModeCommand}"/>
+                  <Button Grid.Column="1" Content="Direct files" Classes="mode" Classes.selected="{Binding IsDirectMode}" Command="{Binding SelectDirectModeCommand}"/>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Grid>
+           <Border Classes="dropzone" Padding="15">
+            <Grid ColumnDefinitions="42,*">
+              <Border Width="34" Height="34" CornerRadius="17" Background="#203A52">
+                <TextBlock Text="+" FontSize="21" Foreground="#80B4FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Drop an input to begin" FontWeight="SemiBold"/>
+                  <TextBlock Text="A single package opens here. Folders or multiple packages go to Batch queue." Classes="muted"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+          <Grid ColumnDefinitions="2*,16,*" VerticalAlignment="Top">
+          <StackPanel Spacing="14">
+          <Border Classes="panel" Padding="20">
+            <StackPanel Spacing="15">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="1  INPUT" Classes="card-title"/>
+                   <TextBlock Text="Select the source to decode, then choose where artifacts should go." Classes="muted"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="REQUIRED" Classes="eyebrow" VerticalAlignment="Top" Margin="16,3,0,0"/>
+              </Grid>
+              <StackPanel IsVisible="{Binding IsPackageMode}" Spacing="5">
+                <TextBlock Text="APPLICATION PACKAGE" Classes="label"/>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Classes="path" Text="{Binding PackagePath}" PlaceholderText="APK, APKS, APKM, XAPK, ZIP or decrypted IPA"/>
+                  <Button Grid.Column="1" Content="Browse" Classes="browse" Click="BrowsePackage"/>
+                </Grid>
+                <TextBlock Text="Package mode extracts and resolves the native binary and metadata together." Classes="muted"/>
+              </StackPanel>
+              <StackPanel IsVisible="{Binding IsDirectMode}" Spacing="13">
+                <StackPanel Spacing="5">
+                  <TextBlock Text="EXECUTABLE" Classes="label"/>
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Classes="path" Text="{Binding BinaryPath}" PlaceholderText="GameAssembly.dll, libil2cpp.so, Mach-O, NSO or WASM"/>
+                    <Button Grid.Column="1" Content="Browse" Classes="browse" Click="BrowseBinary"/>
+                  </Grid>
+                </StackPanel>
+                <StackPanel Spacing="5">
+                  <TextBlock Text="GLOBAL METADATA" Classes="label"/>
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Classes="path" Text="{Binding MetadataPath}" PlaceholderText="global-metadata.dat"/>
+                    <Button Grid.Column="1" Content="Browse" Classes="browse" Click="BrowseMetadata"/>
+                  </Grid>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Spacing="5">
+                <TextBlock Text="OUTPUT DIRECTORY" Classes="label"/>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                  <TextBox Classes="path" Text="{Binding OutputPath}" PlaceholderText="Directory for generated artifacts"/>
+                  <Button Grid.Column="1" Content="Browse" Classes="browse" Click="BrowseOutput"/>
+                  <Button Grid.Column="2" Content="Open" Classes="browse" Command="{Binding OpenCurrentOutputCommand}" IsEnabled="{Binding CanOpenOutput}"/>
+                </Grid>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel" Padding="18">
+            <StackPanel Spacing="11">
+              <StackPanel Spacing="3">
+                <TextBlock Text="2  VALIDATE" Classes="card-title"/>
+                <TextBlock Text="The target is inspected before the run can start." Classes="muted"/>
+              </StackPanel>
+              <Border Classes="target-summary">
+                <StackPanel Spacing="5">
+                  <TextBlock Text="{Binding ValidationState}" Classes="eyebrow"/>
+                  <TextBlock Text="{Binding PackageInspectionSummary}" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding DisplayStatus}" Classes="muted" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+              <StackPanel IsVisible="{Binding IsAndroidPackage}" Spacing="5">
+                <TextBlock Text="ANDROID ABI" Classes="label" Margin="0"/>
+                <ComboBox ItemsSource="{Binding AndroidArchitectureOptions}" SelectedItem="{Binding AndroidArchitecture}" MinHeight="36"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Spacing="14">
+          <Border Classes="subtle" Padding="16" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="12">
+              <StackPanel VerticalAlignment="Center">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="3  FALLBACK" Classes="card-title"/>
+                  <TextBlock Grid.Column="1" Text="OPTIONAL" Classes="eyebrow" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </Grid>
+                <TextBlock Text="Manual addresses for unusual dumps" Classes="muted" TextWrapping="Wrap"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="CODE REGISTRATION" Classes="label"/>
+                <TextBox Classes="path compact" Text="{Binding CodeRegistration}" PlaceholderText="0x1234ABCD"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="METADATA REGISTRATION" Classes="label"/>
+                <TextBox Classes="path compact" Text="{Binding MetadataRegistration}" PlaceholderText="0x5678EF00"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="IMAGE BASE" Classes="label"/>
+                <TextBox Classes="path compact" Text="{Binding ImageBase}" PlaceholderText="Optional dumped image base"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          <Border Classes="subtle" Padding="15">
+            <Grid RowDefinitions="Auto,12,Auto">
+              <StackPanel Spacing="4">
+                <TextBlock Text="4  READY" Classes="eyebrow"/>
+                <TextBlock Text="{Binding ValidationState}" Classes="run-state"/>
+                <TextBlock Text="{Binding DisplayStatus}" Classes="muted" TextWrapping="Wrap" MaxLines="2"/>
+              </StackPanel>
+              <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Button Content="Cancel" Classes="secondary" IsVisible="{Binding IsRunning}" Command="{Binding CancelCommand}"/>
+                <Button Grid.Column="1" Content="Start dump" Classes="primary hero" Command="{Binding StartCommand}" ToolTip.Tip="Run the configured analysis" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+              </Grid>
+            </Grid>
+          </Border>
+          </StackPanel>
+          </Grid>
+        </StackPanel>
+      </ScrollViewer>
+      <Grid IsVisible="{Binding IsBatchPage}" RowDefinitions="Auto,14,Auto,14,*,14,Auto">
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+          <StackPanel Spacing="4">
+            <TextBlock Text="BATCH QUEUE" Classes="eyebrow"/>
+            <TextBlock Text="Process packages in order" Classes="section-title"/>
+            <TextBlock Text="{Binding BatchSummary}" Classes="muted"/>
+          </StackPanel>
+          <Button Grid.Column="1" Content="Add packages" Classes="primary" Click="AddBatchFiles" Margin="8,0"/>
+          <Button Grid.Column="2" Content="Retry failed" Classes="secondary" Command="{Binding RetryFailedCommand}" Margin="0,0,8,0"/>
+          <Button Grid.Column="3" Content="Clear" Classes="secondary" Command="{Binding ClearBatchCommand}"/>
+        </Grid>
+        <Border Grid.Row="2" Classes="subtle" Padding="12">
+           <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+            <TextBlock Text="EXECUTION" Classes="label" VerticalAlignment="Center" Margin="0"/>
+             <ComboBox Grid.Column="1" Width="84" VerticalAlignment="Center" ItemsSource="{Binding BatchParallelismOptions}" SelectedItem="{Binding BatchParallelism}"/>
+            <CheckBox Grid.Column="2" Content="Stop on first error" IsChecked="{Binding BatchStopOnError}" VerticalAlignment="Center"/>
+             <Button Grid.Column="4" Content="Up" Classes="secondary" Command="{Binding MoveSelectedBatchUpCommand}" VerticalAlignment="Center"/>
+             <Button Grid.Column="5" Content="Down" Classes="secondary" Command="{Binding MoveSelectedBatchDownCommand}" VerticalAlignment="Center"/>
+             <Button Grid.Column="6" Content="Remove" Classes="secondary" Command="{Binding RemoveSelectedBatchCommand}" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+        <Border Grid.Row="4" Classes="panel" ClipToBounds="True">
+          <Grid>
+            <StackPanel IsVisible="{Binding !HasBatchItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" MaxWidth="420">
+              <Border Width="42" Height="42" CornerRadius="21" Background="#1C2C37" HorizontalAlignment="Center">
+                <TextBlock Text="+" FontSize="22" Foreground="#80B4FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="No packages in this queue" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+              <TextBlock Text="Add application packages above, or drop a folder anywhere in the window." Classes="muted" TextWrapping="Wrap" TextAlignment="Center"/>
+              <Button Content="Add packages" Classes="secondary" Click="AddBatchFiles" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+            <ListBox IsVisible="{Binding HasBatchItems}" ItemsSource="{Binding BatchItems}" SelectedItem="{Binding SelectedBatchItem}" Background="Transparent" BorderThickness="0" Padding="8">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:BatchItemViewModel">
+                <Border Classes="subtle" Margin="2,4" Padding="12">
+                  <Grid ColumnDefinitions="2*,100,120,2*" MinHeight="68">
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding InputPath}" Classes="mono" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding Inspection}" Classes="muted" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Type}" Classes="eyebrow" VerticalAlignment="Center"/>
+                    <Border Grid.Column="2" Classes="badge" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Status}" Foreground="#B9D5FF" FontSize="11"/>
+                    </Border>
+                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                      <TextBox Classes="path compact" Text="{Binding OutputPath}"/>
+                      <TextBlock Text="{Binding Detail}" Classes="muted" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </Border>
+        <Border Grid.Row="6" Classes="subtle" Padding="15">
+          <Grid ColumnDefinitions="*,Auto,Auto">
+            <TextBlock Text="{Binding Status}" Classes="muted" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            <Button Grid.Column="1" Content="Cancel" Classes="secondary" IsVisible="{Binding IsRunning}" Command="{Binding CancelCommand}" Margin="10,0"/>
+            <Button Grid.Column="2" Content="Run queue" Classes="primary" Command="{Binding StartBatchCommand}"/>
+          </Grid>
+        </Border>
+      </Grid>
+      <Grid IsVisible="{Binding IsHistoryPage}" RowDefinitions="Auto,18,*">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <StackPanel Spacing="4">
+            <TextBlock Text="RECENT ACTIVITY" Classes="eyebrow"/>
+            <TextBlock Text="Job history" Classes="section-title"/>
+            <TextBlock Text="{Binding HistorySummary}" Classes="muted"/>
+          </StackPanel>
+          <Button Grid.Column="1" Content="Open output" Classes="primary" Command="{Binding OpenSelectedHistoryOutputCommand}" Margin="8,0"/>
+          <Button Grid.Column="2" Content="Clear history" Classes="secondary" Command="{Binding ClearHistoryCommand}"/>
+        </Grid>
+        <Border Grid.Row="2" Classes="panel" Padding="8">
+          <Grid>
+            <StackPanel IsVisible="{Binding !HasHistory}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="7" MaxWidth="400">
+               <TextBlock Text="Your run history is ready for its first result" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+               <TextBlock Text="Completed dumps will show success, errors, and whether the output folder is still available." Classes="muted" TextAlignment="Center" TextWrapping="Wrap"/>
+              <Button Content="Create a new dump" Classes="secondary" Command="{Binding ShowDumpCommand}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+            <ListBox IsVisible="{Binding HasHistory}" ItemsSource="{Binding JobHistory}" SelectedItem="{Binding SelectedHistoryItem}" Background="Transparent" BorderThickness="0">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:JobHistoryItemViewModel">
+                <Border Classes="subtle" Margin="2,4" Padding="14">
+                  <Grid ColumnDefinitions="4,16,2*,110,2*" MinHeight="74">
+                    <Border Background="#65C18C" CornerRadius="2" IsVisible="{Binding Success}"/>
+                    <Border Background="#E06C75" CornerRadius="2" IsVisible="{Binding Failed}"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="4">
+                      <TextBlock Text="{Binding InputPath}" Classes="mono" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding FinishedAt}" Classes="muted"/>
+                    </StackPanel>
+                    <Border Grid.Column="3" Classes="badge" HorizontalAlignment="Left" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Architecture}" Classes="eyebrow"/>
+                    </Border>
+                    <StackPanel Grid.Column="4" VerticalAlignment="Center" Spacing="4">
+                      <TextBlock Text="{Binding Status}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding OutputStatus}" Classes="muted" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="OUTPUT MISSING" Foreground="#E5B567" FontSize="10" FontWeight="Bold" IsVisible="{Binding IsOutputMissing}"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </Border>
+      </Grid>
+      <ScrollViewer IsVisible="{Binding IsSettingsPage}" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="18" MaxWidth="900">
+          <StackPanel Spacing="4">
+            <TextBlock Text="SETTINGS" Classes="eyebrow"/>
+            <TextBlock Text="Make each run predictable" Classes="section-title"/>
+             <TextBlock Text="Set the defaults that keep single dumps and batch jobs consistent." Classes="muted" FontSize="13"/>
+          </StackPanel>
+          <Border Classes="panel" ClipToBounds="True">
+            <StackPanel>
+              <Border Padding="18,14" Background="#1A242A">
+                <StackPanel Spacing="3">
+                   <TextBlock Text="OUTPUT &amp; SPEED" Classes="card-title"/>
+                   <TextBlock Text="Choose the artifacts to create and how aggressively to process them." Classes="muted"/>
+                </StackPanel>
+              </Border>
+              <Border Classes="setting-row">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="C# metadata dump" FontWeight="SemiBold"/>
+                    <TextBlock Text="Writes types, fields, properties and methods to dump.cs." Classes="muted"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding GenerateDumpCs}"/>
+                </Grid>
+              </Border>
+              <Border Classes="setting-row">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="Analysis structures" FontWeight="SemiBold"/>
+                    <TextBlock Text="Writes il2cpp.h and script metadata for disassemblers." Classes="muted"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding GenerateStructures}"/>
+                </Grid>
+              </Border>
+              <Border Classes="setting-row">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="Dummy DLL assemblies" FontWeight="SemiBold"/>
+                    <TextBlock Text="Reconstructs managed assemblies for dnSpy and ILSpy." Classes="muted"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding GenerateDummyDll}"/>
+                </Grid>
+              </Border>
+              <Border Classes="setting-row last">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="Fast metadata scan" FontWeight="SemiBold"/>
+                    <TextBlock Text="Skips expensive executable scans when the input supports it." Classes="muted"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding FastMode}"/>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+          <Grid ColumnDefinitions="*,14,*">
+            <Border Classes="panel" ClipToBounds="True">
+              <StackPanel>
+                <Border Padding="18,14" Background="#1A242A">
+                  <TextBlock Text="DUMP.CS CONTENT" Classes="card-title"/>
+                </Border>
+                <Border Classes="setting-row compact">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Properties" FontWeight="SemiBold"/>
+                      <TextBlock Text="Include property declarations." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DumpProperties}"/>
+                  </Grid>
+                </Border>
+                <Border Classes="setting-row compact">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Attributes" FontWeight="SemiBold"/>
+                      <TextBlock Text="Include type and member attributes." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DumpAttributes}"/>
+                  </Grid>
+                </Border>
+                <Border Classes="setting-row compact">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Field offsets" FontWeight="SemiBold"/>
+                      <TextBlock Text="Show native field offsets." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DumpFieldOffsets}"/>
+                  </Grid>
+                </Border>
+                <Border Classes="setting-row compact">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Method offsets" FontWeight="SemiBold"/>
+                      <TextBlock Text="Show method addresses." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DumpMethodOffsets}"/>
+                  </Grid>
+                </Border>
+                <Border Classes="setting-row compact last">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Type definition indices" FontWeight="SemiBold"/>
+                      <TextBlock Text="Include metadata indices for cross-referencing." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DumpTypeDefIndices}"/>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Classes="panel" ClipToBounds="True">
+              <StackPanel>
+                <Border Padding="18,14" Background="#1A242A">
+                  <TextBlock Text="PROCESSING" Classes="card-title"/>
+                </Border>
+                <Border Classes="setting-row compact">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Structure workers" FontWeight="SemiBold"/>
+                      <TextBlock Text="Parallel generation workers." Classes="muted"/>
+                    </StackPanel>
+                    <ComboBox Grid.Column="1" Width="105" ItemsSource="{Binding WorkerThreadOptions}" SelectedItem="{Binding WorkerThreads}"/>
+                  </Grid>
+                </Border>
+                <Border Classes="setting-row compact last">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="Preserve DLL tokens" FontWeight="SemiBold"/>
+                      <TextBlock Text="Copy original metadata tokens." Classes="muted"/>
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding DummyDllAddToken}"/>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+          </Grid>
+          <Expander IsExpanded="False" Background="#151C21" BorderBrush="#2B3941" BorderThickness="1" CornerRadius="7">
+            <Expander.Header>
+              <StackPanel Margin="10,6" Spacing="3">
+                <TextBlock Text="Analysis integrations" Classes="card-title"/>
+                <TextBlock Text="Optional scripts for disassemblers and analysis tools" Classes="muted"/>
+              </StackPanel>
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding AnalysisScripts}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AnalysisScriptViewModel">
+                    <Border Classes="setting-row">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="{Binding Tool}" FontWeight="SemiBold"/>
+                          <TextBlock Text="{Binding FileName}" Classes="mono"/>
+                          <TextBlock Text="{Binding Description}" Classes="muted" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsSelected}"/>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+    <GridSplitter Grid.Column="2" Grid.Row="1" Height="5" ResizeDirection="Rows" Background="#26343B" IsVisible="{Binding IsLogsVisible}"/>
+    <Border Grid.Column="2" Grid.Row="2" MinHeight="180" MaxHeight="420" Background="#0F1519" BorderBrush="#2A3941" BorderThickness="0,1,0,0" IsVisible="{Binding IsLogsVisible}">
+      <Grid RowDefinitions="Auto,*" Margin="22,14,22,16">
+        <Grid ColumnDefinitions="Auto,18,*,Auto,Auto,Auto">
+          <StackPanel Spacing="2">
+             <TextBlock Text="LOGS" Classes="eyebrow"/>
+            <TextBlock Text="{Binding ActivitySummary}" Classes="muted"/>
+          </StackPanel>
+          <Border Grid.Column="2" Classes="metric" Padding="12,8">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding Stage}" FontWeight="SemiBold"/>
+              <TextBlock Text="{Binding Status}" Classes="muted" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Border>
+          <Button Grid.Column="3" Content="Clear" Classes="quiet" Command="{Binding ClearLogsCommand}" IsEnabled="{Binding HasActivity}" Margin="12,0,8,0"/>
+          <Button Grid.Column="4" Content="Export" Classes="secondary" Click="ExportDiagnostics" IsEnabled="{Binding CanExportDiagnostics}" Margin="0,0,8,0"/>
+             <Button Grid.Column="5" Content="Close logs" Classes="quiet" Command="{Binding DismissLogsCommand}" ToolTip.Tip="Hide diagnostic logs"/>
+        </Grid>
+          <Border Grid.Row="1" Classes="subtle" ClipToBounds="True" Margin="0,12,0,0">
+            <Grid RowDefinitions="34,*">
+            <Border Background="#172027" BorderBrush="#2A3941" BorderThickness="0,0,0,1">
+              <Grid ColumnDefinitions="72,84,*" Margin="12,0">
+                <TextBlock Text="TIME" Classes="eyebrow" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="LEVEL" Classes="eyebrow" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="EVENT" Classes="eyebrow" VerticalAlignment="Center"/>
+              </Grid>
+            </Border>
+            <StackPanel Grid.Row="1" IsVisible="{Binding !HasActivity}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+              <TextBlock Text="No events yet" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+              <TextBlock Text="Run a dump or open a completed job to inspect activity here." Classes="muted" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <ListBox Grid.Row="1" IsVisible="{Binding HasActivity}" ItemsSource="{Binding ActivityItems}" Background="Transparent" BorderThickness="0" Padding="4">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ActivityItem">
+                  <Grid ColumnDefinitions="72,84,*" Margin="8,5">
+                    <TextBlock Text="{Binding Time}" Classes="mono" FontSize="10"/>
+                    <TextBlock Grid.Column="1" Text="{Binding LevelText}" FontSize="10" FontWeight="SemiBold" Foreground="#B9A36A"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap" Classes="mono"/>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+    <Border Grid.Column="2" Grid.Row="3" Background="#0D1317" BorderBrush="#26343B" BorderThickness="0,1,0,0">
+      <Grid ColumnDefinitions="*,Auto" Margin="28,0,26,0">
+        <TextBlock Text="DROP READY  /  FILES AND FOLDERS ACCEPTED" Classes="eyebrow" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="1" Text="Avalonia 12  /  Compact" Classes="muted" VerticalAlignment="Center"/>
+      </Grid>
+    </Border>
+    <Border Grid.ColumnSpan="3" Grid.RowSpan="4" Background="#B0000000" IsVisible="{Binding IsUpdateDetailsVisible}">
+      <Border Classes="panel" Width="720" MaxHeight="580" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid RowDefinitions="Auto,16,*,18,Auto">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="4">
+              <TextBlock Text="UPDATE AVAILABLE" Classes="eyebrow"/>
+              <TextBlock Text="{Binding UpdateStatus}" Classes="section-title" FontSize="22"/>
+            </StackPanel>
+            <Button Grid.Column="1" Content="Close" Classes="secondary" Command="{Binding DismissUpdateDetailsCommand}"/>
+          </Grid>
+          <Border Grid.Row="2" Classes="subtle" Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <TextBlock Text="{Binding ReleaseNotes}" TextWrapping="Wrap" Classes="muted" FontSize="13"/>
+            </ScrollViewer>
+          </Border>
+          <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto">
+            <Button Content="Skip this version" Classes="secondary" Command="{Binding SkipUpdateCommand}"/>
+            <TextBlock Grid.Column="1" Text="Archive checksum is verified before installation." Classes="muted" VerticalAlignment="Center" Margin="16,0"/>
+            <Button Grid.Column="2" Content="Install and restart" Classes="primary" Command="{Binding InstallUpdateCommand}"/>
+          </Grid>
+        </Grid>
+      </Border>
+    </Border>
+  </Grid>
+</Window>

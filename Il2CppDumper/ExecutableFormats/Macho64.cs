@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,7 +58,7 @@ namespace Il2CppDumper
                         var cryptID = ReadUInt32();
                         if (cryptID != 0)
                         {
-                            MainForm.Log("ERROR: This Mach-O executable is encrypted and cannot be processed.", Brushes.Orange);
+                            DumperDiagnostics.Error("This Mach-O executable is encrypted and cannot be processed.");
                         }
                         break;
                 }
@@ -229,8 +228,8 @@ namespace Il2CppDumper
             }
             if (codeRegistration != 0 && metadataRegistration != 0)
             {
-                MainForm.Log("CodeRegistration : {0:x}", codeRegistration);
-                MainForm.Log("MetadataRegistration : {0:x}", metadataRegistration);
+                DumperDiagnostics.Information("CodeRegistration : {0:x}", codeRegistration);
+                DumperDiagnostics.Information("MetadataRegistration : {0:x}", metadataRegistration);
                 Init(codeRegistration, metadataRegistration);
                 return true;
             }

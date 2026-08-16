@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Il2CppDumper.Desktop</RootNamespace>
+    <AssemblyName>Il2CppDumper</AssemblyName>
+    <ApplicationIcon>../../Assets/il2cppdumper.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishSelfContained>true</PublishSelfContained>
+    <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
+    <TrimMode Condition="'$(Configuration)' == 'Release'">partial</TrimMode>
+    <EnableCompressionInSingleFile Condition="'$(Configuration)' == 'Release'">true</EnableCompressionInSingleFile>
+    <DebugType Condition="'$(Configuration)' == 'Release'">None</DebugType>
+    <DebugSymbols Condition="'$(Configuration)' == 'Release'">false</DebugSymbols>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <!-- Size optimizations -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <IlcDisableReflection>true</IlcDisableReflection>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+
+    <!-- macOS .app bundle configuration -->
+    <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+    <MacOSXBundleIdentifier>com.il2cppdumper.app</MacOSXBundleIdentifier>
+    <MacOSXBundleName>Il2CppDumper</MacOSXBundleName>
+    <MacOSXBundleVersion>1.0.0</MacOSXBundleVersion>
+    <MacOSXBundleShortVersionString>1.0.0</MacOSXBundleShortVersionString>
+    <MacOSXBundleIconFile>il2cppdumper.icns</MacOSXBundleIconFile>
+    <MacOSXBundleInfoDictionary>Info.plist</MacOSXBundleInfoDictionary>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64' OR '$(RuntimeIdentifier)' == 'osx-x64'">
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifiers>osx-arm64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Il2CppDumper.Application/Il2CppDumper.Application.csproj" />
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="NuGet.Versioning" Version="6.14.0" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.94.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64' OR '$(RuntimeIdentifier)' == 'osx-x64'">
+    <None Include="Info.plist" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="il2cppdumper.icns" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <TrimmerRootAssembly Include="Il2CppDumper.Core" />
+  </ItemGroup>
+</Project>

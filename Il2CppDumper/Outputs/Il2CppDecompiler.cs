@@ -24,7 +24,9 @@ namespace Il2CppDumper
 
         public void Decompile(Config config, string outputDir)
         {
-            var writer = new StreamWriter(new FileStream(outputDir + "dump.cs", FileMode.Create), new UTF8Encoding(false));
+            using var writer = new StreamWriter(
+                new FileStream(Path.Combine(outputDir, "dump.cs"), FileMode.Create),
+                new UTF8Encoding(false));
             //dump image
             for (var imageIndex = 0; imageIndex < metadata.imageDefs.Length; imageIndex++)
             {
